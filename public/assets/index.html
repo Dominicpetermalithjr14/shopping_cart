@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dom's Shopping Cart</title>
+    <style>
+      /* CSS styles */
+      body {
+        font-family: "Montserrat", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .cart-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .cart-item img {
+        max-width: 100px;
+        margin-right: 20px;
+        border-radius: 4px;
+      }
+
+      .cart-item h3 {
+        margin: 0 0 5px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .cart-item p {
+        margin: 0;
+        color: #666;
+      }
+
+      .cart-item .quantity {
+        display: flex;
+        align-items: center;
+      }
+
+      .cart-item .quantity button {
+        background-color: #f2f2f2;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .cart-item .quantity button:hover {
+        background-color: #e6e6e6;
+      }
+
+      .cart-item .quantity input {
+        width: 50px;
+        text-align: center;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin: 0 10px;
+      }
+
+      .total-price {
+        text-align: right;
+        font-weight: bold;
+        margin-top: 30px;
+        font-size: 18px;
+      }
+
+      button.checkout {
+        display: block;
+        margin: 30px auto 0;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button.checkout:hover {
+        background-color: #3e8e41;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Dom's Shopping Cart</h1>
+      <div id="cart-items"></div>
+      <div class="total-price">Total: <span id="total-price">$0.00</span></div>
+      <button class="checkout" onclick="checkout()">Checkout</button>
+    </div>
+
+    <script>
+      // JavaScript code
+      let cart = [];
+
+      function addToCart(item) {
+        const existingItem = cart.find((i) => i.id === item.id);
+        if (existingItem) {
+          existingItem.quantity++;
+        } else {
+          cart.push({ ...item, quantity: 1 });
+        }
+        renderCart();
+      }
+
+      function removeFromCart(itemId) {
+        const index = cart.findIndex((i) => i.id === itemId);
+        if (index !== -1) {
+          cart.splice(index, 1);
+          renderCart();
+        }
+      }
+
+      function updateQuantity(itemId, quantity) {
+        const item = cart.find((i) => i.id === itemId);
+        if (item) {
+          item.quantity = quantity;
+          renderCart();
+        }
+      }
+
+      function renderCart() {
+        const cartItems = document.getElementById("cart-items");
+        cartItems.innerHTML = "";
+
+        let totalPrice = 0;
+        cart.forEach((item) => {
+          const itemElement = document.createElement("div");
+          itemElement.classList.add("cart-item");
+
+          const imageElement = document.createElement("img");
+          imageElement.src = item.image;
+          itemElement.appendChild(imageElement);
+
+          const detailsElement = document.createElement("div");
+          const titleElement = document.createElement("h3");
+          titleElement.textContent = item.name;
+          detailsElement.appendChild(titleElement);
+          const priceElement = document.createElement("p");
+          priceElement.textContent = `$${item.price.toFixed(2)}`;
+          detailsElement.appendChild(priceElement);
+          itemElement.appendChild(detailsElement);
+
+          const quantityElement = document.createElement("div");
+          quantityElement.classList.add("quantity");
+          const decrementButton = document.createElement("button");
+          decrementButton.textContent = "-";
+          decrementButton.onclick = () =>
+            updateQuantity(item.id, item.quantity - 1);
+          quantityElement.appendChild(decrementButton);
+          const quantityInput = document.createElement("input");
+          quantityInput.type = "number";
+          quantityInput.value = item.quantity;
+          quantityInput.onchange = () =>
+            updateQuantity(item.id, parseInt(quantityInput.value));
+          quantityElement.appendChild(quantityInput);
+          const incrementButton = document.createElement("button");
+          incrementButton.textContent = "+";
+          incrementButton.onclick = () =>
+            updateQuantity(item.id, item.quantity + 1);
+          quantityElement.appendChild(incrementButton);
+          itemElement.appendChild(quantityElement);
+
+          const removeButton = document.createElement("button");
+          removeButton.textContent = "Remove";
+          removeButton.onclick = () => removeFromCart(item.id);
+          itemElement.appendChild(removeButton);
+
+          cartItems.appendChild(itemElement);
+
+          totalPrice += item.price * item.quantity;
+        });
+
+        const totalPriceElement = document.getElementById("total-price");
+        totalPriceElement.textContent = `$${totalPrice.toFixed(2)}`;
+      }
+
+      function checkout() {
+        alert("Thank you for your purchase!");
+        cart = [];
+        renderCart();
+      }
+
+      // Example usage
+      const items = [
+        {
+          id: 1,
+          name: "Product 1",
+          price: 19.99,
+          image: "./images/glass.jpeg",
+        },
+        {
+          id: 2,
+          name: "Product 2",
+          price: 29.99,
+          image: "./images/nike.jpeg",
+        },
+        {
+          id: 3,
+          name: "Product 3",
+          price: 14.99,
+          image: "./images/classic.webp",
+        },
+      ];
+
+      items.forEach((item) => addToCart(item));
+    </script>
+  </body>
+</html>
